@@ -1,2 +1,3 @@
 git+https://github.com/lethalbit/nmigen@openlane#egg=nmigen
+git+https://github.com/nmigen/nmigen-soc@master#egg=nmigen-soc
 git+https://github.com/shrine-maiden-heavy-industries/arachne@main#egg=arachne

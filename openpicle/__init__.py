@@ -16,4 +16,4 @@ def cli():
 	if args.action == 'arachne-sim':
 		from arachne.core.sim import run_sims
 		run_sims(pkg = 'openpicle/sim', result_dir = 'build')
-		exit(0)
+		return 0
