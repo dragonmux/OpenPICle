@@ -1,5 +1,10 @@
 # SPDX-License-Identifier: BSD-3-Clause
-#from nmigen.vendor.openlane
+from .platform import OpenPIClePlatform
+from .caravel import PIC16Caravel
+
+__all__ = (
+	'cli',
+)
 
 def cli():
 	from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
@@ -17,3 +22,6 @@ def cli():
 		from arachne.core.sim import run_sims
 		run_sims(pkg = 'openpicle/sim', result_dir = 'build')
 		return 0
+	elif args.action == 'build':
+		platform = OpenPIClePlatform()
+		platform.build(PIC16Caravel())
