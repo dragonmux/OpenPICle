@@ -12,7 +12,7 @@ class PICBus(Elaboratable):
 		self.memoryMap = MemoryMap(addr_width = 7, data_width = 8)
 
 	def add_processor(self, processor):
-		assert self.processor == None, "Cannot add more than one processor to the bus"
+		assert self.processor is None, "Cannot add more than one processor to the bus"
 		self.processor = processor
 
 	def add_register(self, *, address, name = None) -> Register:
@@ -27,7 +27,7 @@ class PICBus(Elaboratable):
 		return memory
 
 	def elaborate(self, platform):
-		assert self.processor != None, "Must provide a processor for PICBus to connect to"
+		assert self.processor is not None, "Must provide a processor for PICBus to connect to"
 		self.memoryMap.freeze()
 
 		m = Module()
