@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: BSD-3-Clause
-from nmigen import Elaboratable, Module, Signal, Cat, Array
+from nmigen import Elaboratable, Module, Signal, Cat
 from .types import BitOpcode
 
 __all__ = ["Bitmanip"]

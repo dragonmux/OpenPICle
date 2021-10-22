@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: BSD-3-Clause
-from nmigen import Elaboratable, Module, Signal, Mux
+from nmigen import Elaboratable, Module, Signal
 from .types import ArithOpcode, LogicOpcode
 
 __all__ = ('ArithUnit', 'LogicUnit')
