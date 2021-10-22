@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: BSD-3-Clause
 from arachne.core.sim import sim_case
 from nmigen.sim import Simulator, Settle
 from ...pic16 import PIC16

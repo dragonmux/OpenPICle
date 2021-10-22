@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: BSD-3-Clause
 from arachne.core.sim import sim_case
 from nmigen import Elaboratable, Signal, Module
 from nmigen.sim import Simulator, Settle
