@@ -34,6 +34,7 @@ class DUT(Elaboratable):
 		self.cs = self._dut.cs
 		self.copi = self._dut.copi
 		self.cipo = self._dut.cipo
+		self.ready = self._dut.ready
 		self.begin = self._dut.begin
 		self.rnw = self._dut.rnw
 		self.complete = self._dut.complete
@@ -71,6 +72,7 @@ def startup(sim : Simulator, dut : DUT):
 		assert (yield bus.io.oe) == 0b0001
 		yield
 		yield Settle()
+		assert (yield dut.ready) == 1
 		assert (yield bus.cs.o) == 0
 		assert (yield bus.io.oe) == 0b0000
 		yield
@@ -83,10 +85,12 @@ def startup(sim : Simulator, dut : DUT):
 		yield dut.cs.eq(0)
 		yield
 		yield Settle()
+		assert (yield dut.ready) == 0
 		assert (yield bus.cs.o) == 0
 		assert (yield bus.io.oe) == 0b0000
 		yield reset.eq(0)
 		yield from performIO(dataOut = SPIOpcodes.enableQSPI)
+		assert (yield dut.ready) == 1
 		assert (yield bus.cs.o) == 0
 		assert (yield bus.io.oe) == 0b0000
 		yield

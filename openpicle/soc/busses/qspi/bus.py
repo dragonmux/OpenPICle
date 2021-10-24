@@ -12,6 +12,7 @@ class Bus(Elaboratable):
 		self.cs = Signal()
 		self.copi = Signal(8)
 		self.cipo = Signal(8)
+		self.ready = Signal()
 		self.begin = Signal()
 		self.rnw = Signal()
 		self.complete = Signal()
@@ -62,6 +63,7 @@ class Bus(Elaboratable):
 				m.d.sync += [
 					cs.eq(0),
 					io_oe.eq(0b0000),
+					self.ready.eq(1),
 				]
 				m.next = 'IDLE'
 
