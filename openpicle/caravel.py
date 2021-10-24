@@ -11,6 +11,12 @@ class PIC16Caravel(Elaboratable):
 		self.instruction_data = Signal(14)
 		self.instruction_read = Signal()
 
+		self.peripheral_addr = Signal(7)
+		self.peripheral_read_data = Signal(8)
+		self.peripheral_read = Signal()
+		self.peripheral_write_data = Signal(8)
+		self.peripheral_write = Signal()
+
 	def elaborate(self, platform):
 		from .pic16 import PIC16
 		m = Module()
@@ -19,6 +25,12 @@ class PIC16Caravel(Elaboratable):
 			self.instruction_addr.eq(pic.iBus.address),
 			pic.iBus.data.eq(self.instruction_data),
 			self.instruction_read.eq(pic.iBus.read),
+
+			self.peripheral_addr.eq(pic.pBus.address),
+			self.peripheral_read.eq(pic.pBus.read),
+			pic.pBus.readData.eq(self.peripheral_read_data),
+			self.peripheral_write.eq(pic.pBus.write),
+			self.peripheral_write_data.eq(pic.pBus.writeData),
 		]
 		return m
 
@@ -26,5 +38,11 @@ class PIC16Caravel(Elaboratable):
 		return [
 			self.instruction_addr,
 			self.instruction_data,
-			self.instruction_read
+			self.instruction_read,
+
+			self.peripheral_addr,
+			self.peripheral_read_data,
+			self.peripheral_read,
+			self.peripheral_write_data,
+			self.peripheral_write,
 		]
