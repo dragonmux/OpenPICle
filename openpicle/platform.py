@@ -6,10 +6,11 @@ class OpenPIClePlatform(OpenLANEPlatform):
 	cell_library = 'sky130_fd_sc_hs'
 
 	settings = {
-		"PL_TARGET_DENSITY": 0.70,
-		"FP_HORIZONTAL_HALO": 6,
-		"FP_VERTICAL_HALO": 6,
-		"FP_CORE_UTIL": 5,
+		"PL_TARGET_DENSITY": 0.75,
+		#"FP_HORIZONTAL_HALO": 6,
+		#"FP_VERTICAL_HALO": 6,
+		"FP_CORE_UTIL": 15,
+		"DIODE_INSERTION_STRATEGY": 4,
 	}
 
 	resources = []

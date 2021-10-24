@@ -1,7 +1,6 @@
 # SPDX-License-Identifier: BSD-3-Clause
 from nmigen import Elaboratable, Module, Signal
 # from .pic16 import PIC16
-from .pic16.bitmanip import Bitmanip, BitOpcode
 
 __all__ = (
 	'PIC16Caravel',
@@ -32,38 +31,60 @@ __all__ = (
 
 class PIC16Caravel(Elaboratable):
 	def __init__(self):
-		self.value = Signal(8)
+		from .pic16.alu import LogicOpcode
+		from .pic16.bitmanip import BitOpcode
+		self.lhs = Signal(8)
+		self.rhs = Signal(8)
 		self.carryIn = Signal()
 		self.targetBit = Signal(3)
-		self.result = Signal(8)
+
+		self.logicResult = Signal(8)
+		self.bitResult = Signal(8)
 		self.carryOut = Signal()
 
 		self.enable = Signal()
-		self.operation = Signal(BitOpcode)
+		self.logicOpcode = Signal(LogicOpcode)
+		self.bitOpcode = Signal(BitOpcode)
 
 	def elaborate(self, platform):
+		from .pic16.alu import LogicUnit
+		from .pic16.bitmanip import Bitmanip
 		m = Module()
+		logicUnit = LogicUnit()
+		m.submodules += logicUnit
 		bitmanip = Bitmanip()
 		m.submodules += bitmanip
 		m.d.comb += [
-			bitmanip.value.eq(self.value),
+			logicUnit.lhs.eq(self.lhs),
+			logicUnit.rhs.eq(self.rhs),
+			self.logicResult.eq(logicUnit.result),
+
+			logicUnit.enable.eq(self.enable),
+			logicUnit.operation.eq(self.logicOpcode),
+
+			bitmanip.value.eq(self.rhs),
 			bitmanip.carryIn.eq(self.carryIn),
 			bitmanip.targetBit.eq(self.targetBit),
-			self.result.eq(bitmanip.result),
+			self.bitResult.eq(bitmanip.result),
 			self.carryOut.eq(bitmanip.carryOut),
+
 			bitmanip.enable.eq(self.enable),
-			bitmanip.operation.eq(self.operation),
+			bitmanip.operation.eq(self.bitOpcode),
 		]
 		return m
 
 	def get_ports(self):
 		return [
-			self.value,
+			self.lhs,
+			self.rhs,
 			self.carryIn,
 			self.targetBit,
-			self.result,
+
+			self.logicResult,
+			self.bitResult,
 			self.carryOut,
 
 			self.enable,
-			self.operation,
+			self.logicOpcode,
+			self.bitOpcode,
 		]
