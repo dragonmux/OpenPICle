@@ -1,6 +1,10 @@
 # SPDX-License-Identifier: BSD-3-Clause
 from nmigen.vendor.openlane import OpenLANEPlatform
 
+__all__ = (
+	'OpenPIClePlatform',
+)
+
 class OpenPIClePlatform(OpenLANEPlatform):
 	pdk = 'sky130A'
 	cell_library = 'sky130_fd_sc_hs'
@@ -9,25 +13,12 @@ class OpenPIClePlatform(OpenLANEPlatform):
 		"PL_TARGET_DENSITY": 0.75,
 		#"FP_HORIZONTAL_HALO": 6,
 		#"FP_VERTICAL_HALO": 6,
-		"FP_CORE_UTIL": 15,
+		"FP_CORE_UTIL": 25,
 		"DIODE_INSERTION_STRATEGY": 4,
 	}
 
 	resources = []
 	connectors = []
-
-	@property
-	def openlane_root(self):
-		from os import environ
-		return environ['OPENLANE_ROOT']
-
-	@property
-	def pdk_root(self):
-		from os import environ
-		if 'PDK_ROOT' in environ:
-			return environ['PDK_ROOT']
-		else:
-			return super().pdk_root
 
 	def build(self, elaboratable, build_dir = 'build', do_build = True,
 		program_opts = None, do_program = False, **kwargs
