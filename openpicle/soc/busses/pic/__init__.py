@@ -4,7 +4,9 @@ from nmigen.utils import log2_int
 from nmigen_soc.memory import MemoryMap
 from .types import *
 
-__all__ = ('PICBus')
+__all__ = (
+	'PICBus',
+)
 
 class PICBus(Elaboratable):
 	def __init__(self):
