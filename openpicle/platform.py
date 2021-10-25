@@ -1,5 +1,6 @@
 # SPDX-License-Identifier: BSD-3-Clause
 from nmigen.vendor.openlane import OpenLANEPlatform
+from nmigen_boards.resources.memory import SPIFlashResources
 
 __all__ = (
 	'OpenPIClePlatform',
@@ -17,7 +18,17 @@ class OpenPIClePlatform(OpenLANEPlatform):
 		"DIODE_INSERTION_STRATEGY": 4,
 	}
 
-	resources = []
+	resources = [
+		*SPIFlashResources(0,
+			cs_n = 'qspi_cs',
+			clk = 'qspi_clk',
+			copi = 'qspi_io0',
+			cipo = 'qspi_io1',
+			wp_n = 'qspi_io2',
+			hold_n = 'qspi_io3'
+		)
+	]
+
 	connectors = []
 
 	def build(self, elaboratable, build_dir = 'build', do_build = True,
