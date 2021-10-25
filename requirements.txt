@@ -1,3 +1,4 @@
 git+https://github.com/DX-MON/nmigen@openlane#egg=nmigen
 git+https://github.com/nmigen/nmigen-soc@master#egg=nmigen-soc
+git+https://github.com/nmigen/nmigen-boards@master#egg=nmigen-boards
 git+https://github.com/shrine-maiden-heavy-industries/arachne@main#egg=arachne
