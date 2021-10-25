@@ -25,3 +25,4 @@ def cli():
 	elif args.action == 'build':
 		platform = OpenPIClePlatform()
 		platform.build(PIC16Caravel())
+		return 0
