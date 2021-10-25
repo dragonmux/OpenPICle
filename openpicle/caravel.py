@@ -34,7 +34,8 @@ class PIC16Caravel(Elaboratable):
 			reset.eq(~qspiFlash.ready),
 			self.run.eq(qspiFlash.ready & busy_n),
 
-			qspiFlash.address.eq(pic.iBus.address),
+			qspiFlash.address[0].eq(0),
+			qspiFlash.address[1:].eq(pic.iBus.address),
 			pic.iBus.data.eq(qspiFlash.data),
 			qspiFlash.read.eq(pic.iBus.read),
 
