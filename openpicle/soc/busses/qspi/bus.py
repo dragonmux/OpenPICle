@@ -70,32 +70,34 @@ class Bus(Elaboratable):
 			with m.State('IDLE'):
 				with m.If(self.begin):
 					m.d.sync += write.eq(~self.rnw)
-					m.next = 'QSPI-SHIFT-START'
-			with m.State('QSPI-SHIFT-START'):
-				m.d.sync += io_oe.eq(Repl(write, 4))
-				with m.If(write):
-					m.d.sync += data.eq(self.copi)
-				with m.Else():
-					m.d.sync += data.eq(0)
-				m.next = 'QSPI-SHIFT-L'
+					with m.If(self.rnw):
+						m.d.sync += data.eq(0)
+					with m.Else():
+						m.d.sync += data.eq(self.copi)
+					m.next = 'QSPI-SHIFT-L'
 			with m.State('QSPI-SHIFT-L'):
 				m.d.sync += [
 					bus.clk.o.eq(0),
+					io_oe.eq(Repl(write, 4)),
 					data.eq(data.shift_left(4)),
 					nibbleCounter.eq(nibbleCounter - 1),
 				]
 				with m.If(write):
-					m.d.sync += io_o.eq(data[4:7])
+					m.d.sync += io_o.eq(data[4:8])
 				m.next = 'QSPI-SHIFT-H'
 			with m.State('QSPI-SHIFT-H'):
 				m.d.sync += bus.clk.o.eq(1)
 				with m.If(~write):
-					m.d.sync += data[0:3].eq(io_i)
+					m.d.sync += data[0:4].eq(io_i)
 				with m.If(nibbleCounter == 0):
 					m.d.comb += self.complete.eq(1)
 					with m.If(self.begin):
 						m.d.sync += write.eq(~self.rnw)
-						m.next = 'QSPI-SHIFT-START'
+						with m.If(self.rnw):
+							m.d.sync += data.eq(0)
+						with m.Else():
+							m.d.sync += data.eq(self.copi)
+						m.next = 'QSPI-SHIFT-L'
 					with m.Else():
 						m.next = 'IDLE'
 				with m.Else():
