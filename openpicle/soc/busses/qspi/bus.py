@@ -93,9 +93,7 @@ class Bus(Elaboratable):
 					m.d.comb += self.complete.eq(1)
 					with m.If(self.begin):
 						m.d.sync += write.eq(~self.rnw)
-						with m.If(self.rnw):
-							m.d.sync += data.eq(0)
-						with m.Else():
+						with m.If(~self.rnw):
 							m.d.sync += data.eq(self.copi)
 						m.next = 'QSPI-SHIFT-L'
 					with m.Else():
