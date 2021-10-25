@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: BSD-3-Clause
-from nmigen import Elaboratable, Module, Signal
+from nmigen import Elaboratable, Module, Signal, ResetInserter, EnableInserter
 
 __all__ = (
 	'PIC16Caravel',
@@ -7,10 +7,6 @@ __all__ = (
 
 class PIC16Caravel(Elaboratable):
 	def __init__(self):
-		self.instruction_addr = Signal(12)
-		self.instruction_data = Signal(14)
-		self.instruction_read = Signal()
-
 		self.peripheral_addr = Signal(7)
 		self.peripheral_read_data = Signal(8)
 		self.peripheral_read = Signal()
@@ -19,12 +15,25 @@ class PIC16Caravel(Elaboratable):
 
 	def elaborate(self, platform):
 		from .pic16 import PIC16
+		from .soc.busses.qspi import QSPIBus
 		m = Module()
-		m.submodules.pic = pic = PIC16()
+		reset = Signal()
+		busy_n = Signal(reset = 1)
+
+		m.submodules.qspiFlash = qspiFlash = QSPIBus(resourceName = ('spi_flash_4x', 0))
+		m.submodules.pic = pic = ResetInserter(reset)(EnableInserter(busy_n)(PIC16()))
+
+		with m.If(qspiFlash.complete):
+			m.d.sync += busy_n.eq(1)
+		with m.Elif(pic.iBus.read):
+			m.d.sync += busy_n.eq(0)
+
 		m.d.comb += [
-			self.instruction_addr.eq(pic.iBus.address),
-			pic.iBus.data.eq(self.instruction_data),
-			self.instruction_read.eq(pic.iBus.read),
+			reset.eq(~qspiFlash.ready),
+
+			qspiFlash.address.eq(pic.iBus.address),
+			pic.iBus.data.eq(qspiFlash.data),
+			qspiFlash.read.eq(pic.iBus.read),
 
 			self.peripheral_addr.eq(pic.pBus.address),
 			self.peripheral_read.eq(pic.pBus.read),
@@ -36,10 +45,6 @@ class PIC16Caravel(Elaboratable):
 
 	def get_ports(self):
 		return [
-			self.instruction_addr,
-			self.instruction_data,
-			self.instruction_read,
-
 			self.peripheral_addr,
 			self.peripheral_read_data,
 			self.peripheral_read,
