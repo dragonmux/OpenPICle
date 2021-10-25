@@ -14,7 +14,9 @@ class OpenPIClePlatform(OpenLANEPlatform):
 		"PL_TARGET_DENSITY": 0.75,
 		#"FP_HORIZONTAL_HALO": 6,
 		#"FP_VERTICAL_HALO": 6,
-		"FP_CORE_UTIL": 25,
+		"FP_CORE_UTIL": 10,
+		# Caravel provides 2920x3520µm for activites
+		"DIE_AREA": '"0 0 2920 3520"',
 		"DIODE_INSERTION_STRATEGY": 4,
 	}
 
