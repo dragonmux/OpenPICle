@@ -95,11 +95,13 @@ def readByte(sim : Simulator, dut : Controller):
 		yield from qspiRead(0x00)
 		yield from qspiRead(0x00)
 		yield from qspiWrite(0xE9)
+		yield from qspiWrite(0x5A)
+		assert (yield dut.complete) == 1
 		yield
 		yield Settle()
 		assert (yield bus.cs.o) == 0
-		assert (yield dut.complete) == 1
-		assert (yield dut.data) == 0xE9
+		yield
+		assert (yield dut.data) == 0x5AE9
 		yield
 		yield Settle()
 		yield

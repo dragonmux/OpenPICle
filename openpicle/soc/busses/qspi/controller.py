@@ -12,7 +12,7 @@ __all__ = (
 class Controller(Elaboratable):
 	def __init__(self, resourceName : Union[Tuple[str], Tuple[str, int]]):
 		self.address = Signal(24)
-		self.data = Signal(8)
+		self.data = Signal(16)
 		self.ready = Signal()
 		self.read = Signal()
 		self.complete = Signal()
@@ -31,7 +31,7 @@ class Controller(Elaboratable):
 
 		with m.FSM(name = 'flash-fsm'):
 			with m.State('IDLE'):
-				with m.If(self.read):
+				with m.If(self.ready & self.read):
 					# As soon as we get asked to read something, issue the command to the Flash
 					m.d.sync += bus.cs.eq(1)
 					m.d.comb += [
@@ -73,24 +73,32 @@ class Controller(Elaboratable):
 						bus.copi.eq(0),
 					]
 					with m.If(dummyCounter == 1):
-						m.next = 'ISSUE-DATA'
-			with m.State('ISSUE-DATA'):
+						m.next = 'ISSUE-DATA-L'
+			with m.State('ISSUE-DATA-L'):
 				with m.If(bus.complete):
 					m.d.comb += [
 						bus.begin.eq(1),
 						bus.rnw.eq(1),
 					]
-					m.next = 'ISSUE-DATA-WAIT'
-			with m.State('ISSUE-DATA-WAIT'):
+					m.next = 'ISSUE-DATA-H'
+			with m.State('ISSUE-DATA-H'):
 				with m.If(bus.complete):
-					m.next = 'ISSUE-DELAY'
-			with m.State('ISSUE-DELAY'):
+					m.d.comb += [
+						bus.begin.eq(1),
+						bus.rnw.eq(1),
+					]
+					m.next = 'STORE-DATA-L'
+			with m.State('STORE-DATA-L'):
+				m.d.sync += self.data[0:8].eq(bus.cipo)
+				m.next = 'WAIT-DATA-H'
+			with m.State('WAIT-DATA-H'):
+				with m.If(bus.complete):
+					m.next = 'STORE-DATA-H'
+			with m.State('STORE-DATA-H'):
 				m.d.sync += [
 					bus.cs.eq(0),
-					self.data.eq(bus.cipo),
+					self.data[8:16].eq(bus.cipo),
 				]
-				m.next = 'COMPLETE'
-			with m.State('COMPLETE'):
 				m.d.comb += self.complete.eq(1)
 				m.next = 'IDLE'
 		return m
