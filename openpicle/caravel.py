@@ -7,6 +7,8 @@ __all__ = (
 
 class PIC16Caravel(Elaboratable):
 	def __init__(self):
+		self.run = Signal()
+
 		self.peripheral_addr = Signal(7)
 		self.peripheral_read_data = Signal(8)
 		self.peripheral_read = Signal()
@@ -23,13 +25,14 @@ class PIC16Caravel(Elaboratable):
 		m.submodules.qspiFlash = qspiFlash = QSPIBus(resourceName = ('spi_flash_4x', 0))
 		m.submodules.pic = pic = ResetInserter(reset)(EnableInserter(busy_n)(PIC16()))
 
-		with m.If(qspiFlash.complete):
+		with m.If(qspiFlash.complete | reset):
 			m.d.sync += busy_n.eq(1)
 		with m.Elif(pic.iBus.read):
 			m.d.sync += busy_n.eq(0)
 
 		m.d.comb += [
 			reset.eq(~qspiFlash.ready),
+			self.run.eq(qspiFlash.ready & busy_n),
 
 			qspiFlash.address.eq(pic.iBus.address),
 			pic.iBus.data.eq(qspiFlash.data),
@@ -45,6 +48,8 @@ class PIC16Caravel(Elaboratable):
 
 	def get_ports(self):
 		return [
+			self.run,
+
 			self.peripheral_addr,
 			self.peripheral_read_data,
 			self.peripheral_read,
