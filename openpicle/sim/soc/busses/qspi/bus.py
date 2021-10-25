@@ -19,7 +19,7 @@ bus = Record(
 		('clk', [
 			('o', 1, DIR_FANOUT),
 		]),
-		('io', [
+		('dq', [
 			('i', 4, DIR_FANIN),
 			('o', 4, DIR_FANOUT),
 			('oe', 4, DIR_FANOUT),
@@ -53,13 +53,13 @@ class DUT(Elaboratable):
 def startup(sim : Simulator, dut : DUT):
 	bus = dut._bus
 	reset = dut.reset
-	copi = bus.io.o[0]
+	copi = bus.dq.o[0]
 
 	def performIO(*, dataOut):
 		yield
 		yield Settle()
 		assert (yield bus.cs.o) == 1
-		assert (yield bus.io.oe) == 0b0001
+		assert (yield bus.dq.oe) == 0b0001
 		for i in range(8):
 			yield
 			yield Settle()
@@ -69,12 +69,12 @@ def startup(sim : Simulator, dut : DUT):
 			yield Settle()
 			assert (yield bus.clk.o) == 1
 		assert (yield bus.cs.o) == 1
-		assert (yield bus.io.oe) == 0b0001
+		assert (yield bus.dq.oe) == 0b0001
 		yield
 		yield Settle()
 		assert (yield dut.ready) == 1
 		assert (yield bus.cs.o) == 0
-		assert (yield bus.io.oe) == 0b0000
+		assert (yield bus.dq.oe) == 0b0000
 		yield
 		yield Settle()
 
@@ -87,14 +87,14 @@ def startup(sim : Simulator, dut : DUT):
 		yield Settle()
 		assert (yield dut.ready) == 0
 		assert (yield bus.cs.o) == 0
-		assert (yield bus.io.oe) == 0b0000
+		assert (yield bus.dq.oe) == 0b0000
 		yield reset.eq(0)
 		yield from performIO(dataOut = SPIOpcodes.enableQSPI)
 		assert (yield dut.ready) == 1
 		assert (yield bus.cs.o) == 0
-		assert (yield bus.io.oe) == 0b0000
+		assert (yield bus.dq.oe) == 0b0000
 		yield
 		yield Settle()
 		assert (yield bus.cs.o) == 0
-		assert (yield bus.io.oe) == 0b0000
+		assert (yield bus.dq.oe) == 0b0000
 	yield domainSync, 'sync'

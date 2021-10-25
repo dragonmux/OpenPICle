@@ -19,7 +19,7 @@ bus = Record(
 		('clk', [
 			('o', 1, DIR_FANOUT),
 		]),
-		('io', [
+		('dq', [
 			('i', 4, DIR_FANIN),
 			('o', 4, DIR_FANOUT),
 			('oe', 4, DIR_FANOUT),
@@ -41,34 +41,34 @@ def qspiRead(data):
 	yield
 	yield Settle()
 	assert (yield bus.clk.o) == 0
-	assert (yield bus.io.oe) == 0b1111
+	assert (yield bus.dq.oe) == 0b1111
 	yield
 	yield Settle()
-	assert (yield bus.io.o) == (data >> 4) & 0xF
+	assert (yield bus.dq.o) == (data >> 4) & 0xF
 	assert (yield bus.clk.o) == 1
 	yield
 	yield Settle()
 	assert (yield bus.clk.o) == 0
-	assert (yield bus.io.oe) == 0b1111
+	assert (yield bus.dq.oe) == 0b1111
 	yield
 	yield Settle()
-	assert (yield bus.io.o) == data & 0xF
+	assert (yield bus.dq.o) == data & 0xF
 	assert (yield bus.clk.o) == 1
 
 def qspiWrite(data):
 	yield
 	yield Settle()
 	assert (yield bus.clk.o) == 0
-	assert (yield bus.io.oe) == 0b0000
-	yield bus.io.i.eq((data >> 4) & 0xF)
+	assert (yield bus.dq.oe) == 0b0000
+	yield bus.dq.i.eq((data >> 4) & 0xF)
 	yield
 	yield Settle()
 	assert (yield bus.clk.o) == 1
 	yield
 	yield Settle()
 	assert (yield bus.clk.o) == 0
-	assert (yield bus.io.oe) == 0b0000
-	yield bus.io.i.eq(data & 0xF)
+	assert (yield bus.dq.oe) == 0b0000
+	yield bus.dq.i.eq(data & 0xF)
 	yield
 	yield Settle()
 	assert (yield bus.clk.o) == 1

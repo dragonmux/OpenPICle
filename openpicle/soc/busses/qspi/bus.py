@@ -24,11 +24,11 @@ class Bus(Elaboratable):
 		bitCounter = Signal(range(8))
 		nibbleCounter = Signal(range(2))
 		write = Signal()
-		io_i = bus.io.i
-		io_o = bus.io.o
-		io_oe = bus.io.oe
+		io_i = bus.dq.i
+		io_o = bus.dq.o
+		io_oe = bus.dq.oe
 		cs = Signal()
-		copi = bus.io.o[0]
+		copi = bus.dq.o[0]
 
 		m.d.comb += [
 			self.complete.eq(0),
