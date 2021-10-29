@@ -3,6 +3,7 @@ from nmigen.vendor.openlane import OpenLANEPlatform
 from nmigen import Signal
 from nmigen.build import Resource, Pins, Clock, Attrs
 from nmigen_boards.resources.memory import SPIFlashResources
+from pathlib import Path
 
 __all__ = (
 	'OpenPIClePlatform',
@@ -22,6 +23,9 @@ class OpenPIClePlatform(OpenLANEPlatform):
 		#"FP_HORIZONTAL_HALO": 6,
 		#"FP_VERTICAL_HALO": 6,
 		"FP_CORE_UTIL": 10,
+		# Caravel specific area config
+		"MAGIC_ZEROSIZE_ORIGIN": 0,
+		"FP_SIZING": "absolute",
 		# Caravel provides 2920x3520µm for activites
 		"DIE_AREA": "0 0 2920 3520",
 		"DIODE_INSERTION_STRATEGY": 4,
@@ -34,13 +38,25 @@ class OpenPIClePlatform(OpenLANEPlatform):
 		"FP_IO_HEXTEND": 2 * unit,
 		"FP_IO_HLENGTH": unit,
 		"FP_IO_HTHICKNESS_MULT": 4,
-		"GLB_RT_OBS": r"""
-			met1 0 0 $::env(DIE_AREA),\
-			met2 0 0 $::env(DIE_AREA),\
-			met3 0 0 $::env(DIE_AREA),\
-			met4 0 0 $::env(DIE_AREA),\
-			met5 0 0 $::env(DIE_AREA)\
-		""",
+		# Caravel requries we use the following PDN settings:
+		"FP_PDN_VWIDTH": 3.1,
+		"FP_PDN_VSPACING": "[expr 5 * $::env(FP_PDN_VWIDTH)]",
+		"FP_PDN_HWIDTH": 3.1,
+		"FP_PDN_HSPACING": "[expr 5 * $::env(FP_PDN_HWIDTH)]",
+		"FP_PDN_CHECK_NODES": 0,
+		"FP_PDN_ENABLE_RAILS": 0,
+		"GLB_RT_OBS": ", ".join((
+			"met1 0 0 $::env(DIE_AREA)",
+			"met2 0 0 $::env(DIE_AREA)",
+			"met3 0 0 $::env(DIE_AREA)",
+			"met4 0 0 $::env(DIE_AREA)",
+			"met5 0 0 $::env(DIE_AREA)",
+		)),
+		# User-configurable PDN settings:
+		"FP_PDN_VPITCH": 180,
+		"FP_PDN_HPITCH": "$::env(FP_PDN_VPITCH)",
+		"FP_PDN_VOFFSET": 5,
+		"FP_PDN_HOFFSET": "$::env(FP_PDN_VOFFSET)",
 		# Caravel-required power nets:
 		"VDD_NETS": "[list {vccd1} {vccd2} {vdda1} {vdda2}]",
 		"GND_NETS": "[list {vssd1} {vssd2} {vssa1} {vssa2}]",
