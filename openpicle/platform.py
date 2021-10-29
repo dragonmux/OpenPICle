@@ -15,6 +15,8 @@ class OpenPIClePlatform(OpenLANEPlatform):
 	default_clk = 'clk'
 	default_rst = 'rst'
 
+	unit = 2.4
+
 	flow_settings = {
 		"PL_TARGET_DENSITY": 0.75,
 		#"FP_HORIZONTAL_HALO": 6,
@@ -23,10 +25,29 @@ class OpenPIClePlatform(OpenLANEPlatform):
 		# Caravel provides 2920x3520µm for activites
 		"DIE_AREA": "0 0 2920 3520",
 		"DIODE_INSERTION_STRATEGY": 4,
+		# Caravel requires we use the following floorplanning settings:
+		"FP_IO_VEXTEND": 2 * unit,
+		"FP_IO_VLENGTH": unit,
+		"FP_IO_VTHICKNESS_MULT": 4,
+		"FP_IO_HEXTEND": 2 * unit,
+		"FP_IO_HLENGTH": unit,
+		"FP_IO_HTHICKNESS_MULT": 4,
+		"GLB_RT_OBS": r"""
+			met1 0 0 $::env(DIE_AREA),\
+			met2 0 0 $::env(DIE_AREA),\
+			met3 0 0 $::env(DIE_AREA),\
+			met4 0 0 $::env(DIE_AREA),\
+			met5 0 0 $::env(DIE_AREA)\
+		""",
 		# Caravel-required power nets:
 		"VDD_NETS": "[list {vccd1} {vccd2} {vdda1} {vdda2}]",
 		"GND_NETS": "[list {vssd1} {vssd2} {vssa1} {vssa2}]",
 		"SYNTH_USE_PG_PINS_DEFINES": "USE_POWER_PINS",
+		# Passes/phases/opts that Caravel turns off:
+		"PL_OPENPHYSYN_OPTIMIZATIONS": 0,
+		# Caravel turns this off??
+		"RUN_CVC": 0,
+		"MAGIC_WRITE_FULL_LEF": 0,
 	}
 
 	resources = [
