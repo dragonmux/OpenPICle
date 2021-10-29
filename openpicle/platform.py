@@ -25,6 +25,8 @@ class OpenPIClePlatform(OpenLANEPlatform):
 		# Caravel provides 2920x3520µm for activites
 		"DIE_AREA": "0 0 2920 3520",
 		"DIODE_INSERTION_STRATEGY": 4,
+		# We copied their pin order file as we have to match it.
+		"FP_PIN_ORDER_CFG": "/design_user_project_wrapper/pinOrder.cfg",
 		# Caravel requires we use the following floorplanning settings:
 		"FP_IO_VEXTEND": 2 * unit,
 		"FP_IO_VLENGTH": unit,
@@ -87,3 +89,11 @@ class OpenPIClePlatform(OpenLANEPlatform):
 		return super().build(elaboratable, name = 'user_project_wrapper', build_dir = build_dir,
 			do_build = do_build, program_opts = program_opts, do_program = do_program,
 			ports = ports, **kwargs)
+
+	def prepare(self, elaboratable, name, **kwargs):
+		plan = super().prepare(elaboratable, name, **kwargs)
+		pinFile = Path(__file__).resolve().parent / 'pinOrder.cfg'
+		assert pinFile.exists()
+		with open(f'{pinFile}', 'rb') as file:
+			plan.add_file('pinOrder.cfg', file.read())
+		return plan
