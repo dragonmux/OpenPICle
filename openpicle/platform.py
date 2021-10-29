@@ -107,9 +107,9 @@ class OpenPIClePlatform(OpenLANEPlatform):
 			ports = ports, **kwargs)
 
 	def prepare(self, elaboratable, name, **kwargs):
-		plan = super().prepare(elaboratable, name, **kwargs)
 		pinFile = Path(__file__).resolve().parent / 'pinOrder.cfg'
 		assert pinFile.exists()
 		with open(f'{pinFile}', 'rb') as file:
-			plan.add_file('pinOrder.cfg', file.read())
+			self.add_file('pinOrder.cfg', file)
+		plan = super().prepare(elaboratable, name, **kwargs)
 		return plan
