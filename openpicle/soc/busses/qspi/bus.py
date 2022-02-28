@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: BSD-3-Clause
-from nmigen import Elaboratable, Module, Signal, Repl
+from amaranth import Elaboratable, Module, Signal, Repl
 from .type import *
 
 __all__ = (

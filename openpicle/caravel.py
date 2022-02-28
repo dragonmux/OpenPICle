@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: BSD-3-Clause
-from nmigen import Elaboratable, Module, Signal, ResetInserter, EnableInserter
+from amaranth import Elaboratable, Module, Signal, ResetInserter, EnableInserter
 
 __all__ = (
 	'PIC16Caravel',

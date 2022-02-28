@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: BSD-3-Clause
 from typing import Tuple, Union
-from nmigen import Elaboratable, Module, Signal
+from amaranth import Elaboratable, Module, Signal
 
 from .bus import Bus
 from .type import QSPIOpcodes

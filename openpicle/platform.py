@@ -1,8 +1,8 @@
 # SPDX-License-Identifier: BSD-3-Clause
-from nmigen.vendor.openlane import OpenLANEPlatform
-from nmigen import Signal
-from nmigen.build import Resource, Pins, Clock, Attrs
-from nmigen_boards.resources.memory import SPIFlashResources
+from amaranth.vendor.openlane import OpenLANEPlatform
+from amaranth import Signal
+from amaranth.build import Resource, Pins, Clock, Attrs
+from amaranth_boards.resources.memory import SPIFlashResources
 from pathlib import Path
 
 __all__ = (

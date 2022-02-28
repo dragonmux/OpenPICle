@@ -1,8 +1,8 @@
 # SPDX-License-Identifier: BSD-3-Clause
 from arachne.core.sim import sim_case
-from nmigen import Elaboratable, Module, Signal, ResetSignal, Record
-from nmigen.hdl.rec import DIR_FANIN, DIR_FANOUT
-from nmigen.sim import Simulator, Settle
+from amaranth import Elaboratable, Module, Signal, ResetSignal, Record
+from amaranth.hdl.rec import DIR_FANIN, DIR_FANOUT
+from amaranth.sim import Simulator, Settle
 
 from .....soc.busses.qspi.bus import Bus
 from .....soc.busses.qspi.type import SPIOpcodes

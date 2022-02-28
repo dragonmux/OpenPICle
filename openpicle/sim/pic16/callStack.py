@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: BSD-3-Clause
 from arachne.core.sim import sim_case
-from nmigen.sim import Simulator
+from amaranth.sim import Simulator
 from ...pic16.callStack import CallStack
 
 @sim_case(
