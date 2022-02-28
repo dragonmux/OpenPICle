@@ -75,21 +75,21 @@ class OpenPIClePlatform(OpenLANEPlatform):
 	}
 
 	resources = [
-		Resource('clk', 0, Pins('clk', dir = 'i', assert_width = 1),
+		Resource('clk', 0, Pins('io[15]', dir = 'i', assert_width = 1),
 			Clock(100e6), Attrs()
 		),
 
-		Resource('rst', 0, Pins('rst', dir = 'i', assert_width = 1),
+		Resource('rst', 0, Pins('io[16]', dir = 'i', assert_width = 1),
 			Attrs()
 		),
 
 		*SPIFlashResources(0,
-			cs_n = 'qspi_cs',
-			clk = 'qspi_clk',
-			copi = 'qspi_io0',
-			cipo = 'qspi_io1',
-			wp_n = 'qspi_io2',
-			hold_n = 'qspi_io3'
+			cs_n = 'io[0]',
+			clk = 'io[4]',
+			copi = 'io[3]',
+			cipo = 'io[1]',
+			wp_n = 'io[2]',
+			hold_n = 'io[6]'
 		),
 	]
 
