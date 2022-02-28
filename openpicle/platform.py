@@ -4,6 +4,7 @@ from amaranth import Signal
 from amaranth.build import Resource, Pins, Clock, Attrs
 from amaranth_boards.resources.memory import SPIFlashResources
 from pathlib import Path
+from jinja2.filters import do_mark_safe as safe
 
 __all__ = (
 	'OpenPIClePlatform',
@@ -19,16 +20,14 @@ class OpenPIClePlatform(OpenLANEPlatform):
 	unit = 2.4
 
 	flow_settings = {
-		"PL_TARGET_DENSITY": 0.75,
-		#"FP_HORIZONTAL_HALO": 6,
-		#"FP_VERTICAL_HALO": 6,
-		"FP_CORE_UTIL": 10,
+		#"PL_TARGET_DENSITY": 0.75,
+		# "DESIGN_IS_CORE": 0,
 		# Caravel specific area config
-		"MAGIC_ZEROSIZE_ORIGIN": 0,
+		"MAGIC_ZEROIZE_ORIGIN": 0,
 		"FP_SIZING": "absolute",
 		# Caravel provides 2920x3520µm for activites
 		"DIE_AREA": "0 0 2920 3520",
-		"DIODE_INSERTION_STRATEGY": 4,
+		"DIODE_INSERTION_STRATEGY": 0,
 		# We copied their pin order file as we have to match it.
 		"FP_PIN_ORDER_CFG": "/design_user_project_wrapper/pinOrder.cfg",
 		# Caravel requires we use the following floorplanning settings:
@@ -39,27 +38,34 @@ class OpenPIClePlatform(OpenLANEPlatform):
 		"FP_IO_HLENGTH": unit,
 		"FP_IO_HTHICKNESS_MULT": 4,
 		# Caravel requries we use the following PDN settings:
+		"FP_PDN_CORE_RING": 1,
+		"FP_PDN_CORE_RING_VWIDTH": 3.1,
+		"FP_PDN_CORE_RING_VOFFSET": 14,
+		"FP_PDN_CORE_RING_VSPACING": 1.7,
+		"FP_PDN_CORE_RING_HWIDTH": 3.1,
+		"FP_PDN_CORE_RING_HOFFSET": 14,
+		"FP_PDN_CORE_RING_HSPACING": 1.7,
 		"FP_PDN_VWIDTH": 3.1,
-		"FP_PDN_VSPACING": "[expr 5 * $::env(FP_PDN_VWIDTH)]",
+		"FP_PDN_VSPACING": safe("[expr 5*$::env(FP_PDN_CORE_RING_VWIDTH)]"),
 		"FP_PDN_HWIDTH": 3.1,
-		"FP_PDN_HSPACING": "[expr 5 * $::env(FP_PDN_HWIDTH)]",
+		"FP_PDN_HSPACING": safe("[expr 5*$::env(FP_PDN_CORE_RING_HWIDTH)]"),
 		"FP_PDN_CHECK_NODES": 0,
 		"FP_PDN_ENABLE_RAILS": 0,
-		"GLB_RT_OBS": ", ".join((
+		"GLB_RT_OBS": safe('"{}"'.format(", ".join((
 			"met1 0 0 $::env(DIE_AREA)",
 			"met2 0 0 $::env(DIE_AREA)",
 			"met3 0 0 $::env(DIE_AREA)",
 			"met4 0 0 $::env(DIE_AREA)",
 			"met5 0 0 $::env(DIE_AREA)",
-		)),
+		)))),
 		# User-configurable PDN settings:
 		"FP_PDN_VPITCH": 180,
-		"FP_PDN_HPITCH": "$::env(FP_PDN_VPITCH)",
 		"FP_PDN_VOFFSET": 5,
-		"FP_PDN_HOFFSET": "$::env(FP_PDN_VOFFSET)",
+		"FP_PDN_HPITCH": safe("$::env(FP_PDN_VPITCH)"),
+		"FP_PDN_HOFFSET": safe("$::env(FP_PDN_VOFFSET)"),
 		# Caravel-required power nets:
-		"VDD_NETS": "[list {vccd1} {vccd2} {vdda1} {vdda2}]",
-		"GND_NETS": "[list {vssd1} {vssd2} {vssa1} {vssa2}]",
+		"VDD_NETS": safe("[list {vccd1} {vccd2} {vdda1} {vdda2}]"),
+		"GND_NETS": safe("[list {vssd1} {vssd2} {vssa1} {vssa2}]"),
 		"SYNTH_USE_PG_PINS_DEFINES": "USE_POWER_PINS",
 		# Passes/phases/opts that Caravel turns off:
 		"PL_OPENPHYSYN_OPTIMIZATIONS": 0,
@@ -96,10 +102,10 @@ class OpenPIClePlatform(OpenLANEPlatform):
 		# This generates the power nets for the top-level even though we do nothing with them
 		for i in range(2):
 			ports.extend([
-				Signal(name = f'vccd{i}'),
-				Signal(name = f'vdda{i}'),
-				Signal(name = f'vssd{i}'),
-				Signal(name = f'vssa{i}'),
+				Signal(name = f'vccd{i + 1}'),
+				Signal(name = f'vdda{i + 1}'),
+				Signal(name = f'vssd{i + 1}'),
+				Signal(name = f'vssa{i + 1}'),
 			])
 
 		return super().build(elaboratable, name = 'user_project_wrapper', build_dir = build_dir,
