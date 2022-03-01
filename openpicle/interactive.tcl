@@ -21,21 +21,29 @@ prep -design $script_dir -tag user_project_wrapper -overwrite
 
 verilog_elaborate
 
-set ::env(CURRENT_SDC) $::env(BASE_SDC_FILE)
+#set ::env(CURRENT_SDC) $::env(BASE_SDC_FILE)
 
 init_floorplan
+
+place_io_ol
+
+add_macro_obs \
+	-defFile $::env(CURRENT_DEF) \
+	-lefFile $::env(MERGED_LEF_UNPADDED) \
+	-obstruction core_obs \
+	-placementX $::env(FP_IO_HLENGTH) \
+	-placementY $::env(FP_IO_VLENGTH) \
+	-sizeWidth [expr [lindex $::env(DIE_AREA) 2]-$::env(FP_IO_HLENGTH)*2] \
+	-sizeHeight [expr [lindex $::env(DIE_AREA) 3]-$::env(FP_IO_VLENGTH)*2] \
+	-fixed 1 \
+	-layerNames "met1 met2 met3 met4 met5"
+
+exec -ignorestderr openroad -exit $script_dir/gen_pdn.tcl
+set_def $::env(pdn_tmp_file_tag).def
 
 # making it "empty"
 remove_nets -input $::env(CURRENT_DEF)
 remove_components -input $::env(CURRENT_DEF)
-
-place_io_ol
-
-# We can, if we want, do PDN things here.
-
-apply_route_obs
-
-run_power_grid_generation
 
 run_magic
 
@@ -50,3 +58,15 @@ save_views       -lef_path $::env(magic_result_file_tag).lef \
                  -tag $::env(RUN_TAG)
 
 #run_antenna_check
+
+# produce "obstructed" LEF to be used for routing
+set gap 0.4
+set llx [expr [lindex $::env(DIE_AREA) 0]-$gap]
+set lly [expr [lindex $::env(DIE_AREA) 1]-$gap]
+set urx [expr [lindex $::env(DIE_AREA) 2]+$gap]
+set ury [expr [lindex $::env(DIE_AREA) 3]+$gap]
+exec python3 $::env(OPENLANE_ROOT)/scripts/rectify.py $llx $lly $urx $ury \
+	< $::env(magic_result_file_tag).lef \
+	| python3 $::env(OPENLANE_ROOT)/scripts/obs.py {*}$::env(DIE_AREA) \
+	> $::env(magic_result_file_tag).obstructed.lef
+file copy -force $::env(magic_result_file_tag).obstructed.lef $save_path/lef

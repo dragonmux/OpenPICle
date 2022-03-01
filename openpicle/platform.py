@@ -118,10 +118,10 @@ class OpenPIClePlatform(Sky130HighSpeedPlatform):
 			with open(f'{filePath}', 'rb') as file:
 				self.add_file(filePath.name, file)
 
-		pinFile = Path(__file__).resolve().parent / 'pinOrder.cfg'
-		interactiveTCL = Path(__file__).resolve().parent / 'interactive.tcl'
-		add_file(self, pinFile)
-		add_file(self, interactiveTCL)
+		add_file(self, Path(__file__).resolve().parent / 'pinOrder.cfg')
+		add_file(self, Path(__file__).resolve().parent / 'interactive.tcl')
+		add_file(self, Path(__file__).resolve().parent / 'pdn.tcl')
+		add_file(self, Path(__file__).resolve().parent / 'gen_pdn.tcl')
 		plan = super().prepare(elaboratable, name, **kwargs)
 		return plan
 
