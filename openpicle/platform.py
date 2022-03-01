@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: BSD-3-Clause
 from amaranth.vendor.openlane import Sky130HighSpeedPlatform
 from amaranth import Module, Signal
-from amaranth.build import Resource, Pins, Clock, Attrs
+from amaranth.build import Resource, Subsignal, Pins, Clock, Attrs
 from amaranth_boards.resources.memory import SPIFlashResources
 from pathlib import Path
 from jinja2.filters import do_mark_safe as safe
@@ -87,6 +87,15 @@ class OpenPIClePlatform(Sky130HighSpeedPlatform):
 			cipo = 'io_1',
 			wp_n = 'io_2',
 			hold_n = 'io_6'
+		),
+
+		Resource('run', 0, Pins('io_23', dir = 'o', assert_width = 1)),
+
+		Resource('p_bus', 0,
+			Subsignal('addr', Pins('io_8 io_9 io_10 io_11 io_12 io_13 io_14', dir = 'o', assert_width = 7)),
+			Subsignal('data', Pins('io_24 io_25 io_26 io_27 io_28 io_29 io_30 io_31', dir = 'io', assert_width = 8)),
+			Subsignal('read', Pins('io_33', dir = 'o', assert_width = 1)),
+			Subsignal('write', Pins('io_34', dir = 'o', assert_width = 1)),
 		),
 	]
 
