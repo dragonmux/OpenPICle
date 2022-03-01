@@ -31,14 +31,14 @@ pdngen::specify_grid macro {
 }
 
 pdngen::specify_grid macro {
-	power_pins $::env(_VDD_NET_NAME) VPWR
-	ground_pins $::env(_GND_NET_NAME) VGND
+	power_pins "$::env(_VDD_NET_NAME) VPWR VPB"
+	ground_pins "$::env(_GND_NET_NAME) VGND VNB"
 	blockages "li1 met1 met2 met3 met4"
 	straps {}
 	connect {{met4_PIN_ver met5}}
 }
 
-set ::halo 10
+set ::halo 5
 
 # POWER or GROUND #Std. cell rails starting with power or ground rails at the bottom of the core area
 set ::rails_start_with "POWER" ;
