@@ -1,6 +1,5 @@
 # SPDX-License-Identifier: BSD-3-Clause
-from amaranth.vendor.openlane import OpenLANEPlatform
-from amaranth import Signal
+from amaranth.vendor.openlane import Sky130HighSpeedPlatform
 from amaranth.build import Resource, Pins, Clock, Attrs
 from amaranth_boards.resources.memory import SPIFlashResources
 from pathlib import Path
@@ -10,9 +9,8 @@ __all__ = (
 	'OpenPIClePlatform',
 )
 
-class OpenPIClePlatform(OpenLANEPlatform):
-	pdk = 'sky130A'
-	cell_library = 'sky130_fd_sc_hs'
+class OpenPIClePlatform(Sky130HighSpeedPlatform):
+	#pdk = 'sky130B'
 
 	default_clk = 'clk'
 	default_rst = 'rst'
@@ -113,9 +111,15 @@ class OpenPIClePlatform(OpenLANEPlatform):
 			ports = ports, **kwargs)
 
 	def prepare(self, elaboratable, name, **kwargs):
+		def add_file(self, filePath : Path):
+			assert filePath.exists()
+			print(filePath.name)
+			with open(f'{filePath}', 'rb') as file:
+				self.add_file(filePath.name, file)
+
 		pinFile = Path(__file__).resolve().parent / 'pinOrder.cfg'
-		assert pinFile.exists()
-		with open(f'{pinFile}', 'rb') as file:
-			self.add_file('pinOrder.cfg', file)
+		interactiveTCL = Path(__file__).resolve().parent / 'interactive.tcl'
+		add_file(self, pinFile)
+		add_file(self, interactiveTCL)
 		plan = super().prepare(elaboratable, name, **kwargs)
 		return plan
