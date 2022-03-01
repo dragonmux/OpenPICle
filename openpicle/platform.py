@@ -104,6 +104,16 @@ class OpenPIClePlatform(Sky130HighSpeedPlatform):
 				Signal(name = f'vssd{i + 1}'),
 				Signal(name = f'vssa{i + 1}'),
 			])
+		self.io = {
+			'i': Signal(38, name = 'io_in'),
+			'o': Signal(38, name = 'io_out'),
+			'oe_n': Signal(38, name = 'io_oen'),
+		}
+		ports.extend([
+			self.io['i'],
+			self.io['o'],
+			self.io['oe_n']
+		])
 
 		return super().build(elaboratable, name = 'user_project_wrapper', build_dir = build_dir,
 			do_build = do_build, program_opts = program_opts, do_program = do_program,
@@ -112,7 +122,6 @@ class OpenPIClePlatform(Sky130HighSpeedPlatform):
 	def prepare(self, elaboratable, name, **kwargs):
 		def add_file(self, filePath : Path):
 			assert filePath.exists()
-			print(filePath.name)
 			with open(f'{filePath}', 'rb') as file:
 				self.add_file(filePath.name, file)
 
@@ -137,17 +146,26 @@ class OpenPIClePlatform(Sky130HighSpeedPlatform):
 		for phys in phys_names:
 			name, index = phys.rsplit('_', 1)
 			if 'i' in pin.dir:
-				pin_i = Signal(name = f'{name}_in[{index}]')
+				if name == 'io':
+					pin_i = self.io['i'][int(index)]
+				else:
+					pin_i = Signal(name = f'{name}_in[{index}]')
+					ios.append(pin_i)
 				m.d.comb += pin.i.eq(~pin_i if invert else pin_i)
-				ios.append(pin_i)
 			if 'o' in pin.dir:
-				pin_o = Signal(name = f'{name}_out[{index}]')
+				if name == 'io':
+					pin_o = self.io['o'][int(index)]
+				else:
+					pin_o = Signal(name = f'{name}_out[{index}]')
+					ios.append(pin_o)
 				m.d.comb += pin_o.eq(~pin.o if invert else pin.o)
-				ios.append(pin_o)
 			if pin.dir in ('oe', 'io'):
-				pin_oe = Signal(name = f'{name}_oeb[{index}]')
+				if name == 'io':
+					pin_oe = self.io['oe_n'][int(index)]
+				else:
+					pin_oe = Signal(name = f'{name}_oeb[{index}]')
+					ios.append(pin_oe)
 				m.d.comb += pin_oe.eq(~pin.oe)
-				ios.append(pin_oe)
 		port.io = ios
 		return m
 
