@@ -1,5 +1,6 @@
 # SPDX-License-Identifier: BSD-3-Clause
 from amaranth.vendor.openlane import Sky130HighSpeedPlatform
+from amaranth import Module, Signal
 from amaranth.build import Resource, Pins, Clock, Attrs
 from amaranth_boards.resources.memory import SPIFlashResources
 from pathlib import Path
@@ -73,21 +74,21 @@ class OpenPIClePlatform(Sky130HighSpeedPlatform):
 	}
 
 	resources = [
-		Resource('clk', 0, Pins('io[15]', dir = 'i', assert_width = 1),
+		Resource('clk', 0, Pins('io_15', dir = 'i', assert_width = 1),
 			Clock(100e6), Attrs()
 		),
 
-		Resource('rst', 0, Pins('io[16]', dir = 'i', assert_width = 1),
+		Resource('rst', 0, Pins('io_16', dir = 'i', assert_width = 1),
 			Attrs()
 		),
 
 		*SPIFlashResources(0,
-			cs_n = 'io[0]',
-			clk = 'io[4]',
-			copi = 'io[3]',
-			cipo = 'io[1]',
-			wp_n = 'io[2]',
-			hold_n = 'io[6]'
+			cs_n = 'io_0',
+			clk = 'io_4',
+			copi = 'io_3',
+			cipo = 'io_1',
+			wp_n = 'io_2',
+			hold_n = 'io_6'
 		),
 	]
 
@@ -123,3 +124,43 @@ class OpenPIClePlatform(Sky130HighSpeedPlatform):
 		add_file(self, interactiveTCL)
 		plan = super().prepare(elaboratable, name, **kwargs)
 		return plan
+
+	def _pin_to_res(self, search_pin):
+		for res, pin, port, attrs in self._ports:
+			if pin is search_pin:
+				return res
+		raise LookupError()
+
+	def _get_io(self, pin, port, invert):
+		m = Module()
+		resource = self._pin_to_res(pin)
+		phys_names = resource.ios[0].names
+		ios = []
+		for phys in phys_names:
+			name, index = phys.rsplit('_', 1)
+			if 'i' in pin.dir:
+				pin_i = Signal(name = f'{name}_in[{index}]')
+				m.d.comb += pin.i.eq(~pin_i if invert else pin_i)
+				ios.append(pin_i)
+			if 'o' in pin.dir:
+				pin_o = Signal(name = f'{name}_out[{index}]')
+				m.d.comb += pin_o.eq(~pin.o if invert else pin.o)
+				ios.append(pin_o)
+			if pin.dir in ('oe', 'io'):
+				pin_oe = Signal(name = f'{name}_oeb[{index}]')
+				m.d.comb += pin_oe.eq(~pin.oe)
+				ios.append(pin_oe)
+		port.io = ios
+		return m
+
+	def get_input(self, pin, port, attrs, invert):
+		return self._get_io(pin, port, invert)
+
+	def get_output(self, pin, port, attrs, invert):
+		return self._get_io(pin, port, invert)
+
+	def get_tristate(self, pin, port, attrs, invert):
+		return self._get_io(pin, port, invert)
+
+	def get_input_output(self, pin, port, attrs, invert):
+		return self._get_io(pin, port, invert)
