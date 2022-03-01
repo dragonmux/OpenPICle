@@ -19,8 +19,7 @@ class OpenPIClePlatform(Sky130HighSpeedPlatform):
 	unit = 2.4
 
 	flow_settings = {
-		#"PL_TARGET_DENSITY": 0.75,
-		# "DESIGN_IS_CORE": 0,
+		# "PL_TARGET_DENSITY": 0.75,
 		# Caravel specific area config
 		"MAGIC_ZEROIZE_ORIGIN": 0,
 		"FP_SIZING": "absolute",
@@ -49,7 +48,6 @@ class OpenPIClePlatform(Sky130HighSpeedPlatform):
 		"FP_PDN_HWIDTH": 3.1,
 		"FP_PDN_HSPACING": safe("[expr 5*$::env(FP_PDN_CORE_RING_HWIDTH)]"),
 		"FP_PDN_CHECK_NODES": 0,
-		"FP_PDN_ENABLE_RAILS": 0,
 		"GLB_RT_OBS": safe('"{}"'.format(", ".join((
 			"met1 0 0 $::env(DIE_AREA)",
 			"met2 0 0 $::env(DIE_AREA)",
