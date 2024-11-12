@@ -344,10 +344,10 @@ class IOWO(Elaboratable):
 		return m
 
 if __name__ == '__main__':
-	from torii.build import Clock
+	#from torii.build import Clock
 	platform = ICEBreakerBitsyPlatform()
 	#platform.resources['clk12', 0].clock = Clock(48e6)
 	platform.add_resources(pmods)
 	platform.build(IOWO(), name = "bitsy", do_program = True,
-		synth_opts = ['-abc9'], nextpnr_opts = ['--tmg-ripup', '--seed=0'],
+		synth_opts = ['-abc9'], nextpnr_opts = ['--tmg-ripup', '--seed=0', '--write', 'bitsy.pnr.json'],
 	)
