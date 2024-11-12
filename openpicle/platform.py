@@ -1,8 +1,8 @@
 # SPDX-License-Identifier: BSD-3-Clause
-from amaranth.vendor.openlane import Sky130HighSpeedPlatform
-from amaranth import Module, Signal
-from amaranth.build import Resource, Subsignal, Pins, Clock, Attrs
-from amaranth_boards.resources.memory import SPIFlashResources
+from torii.platform.asic.sky130 import Sky130BHighSpeedPlatform
+from torii import Module, Signal
+from torii.build import Resource, Subsignal, Pins, Clock, Attrs
+from torii.platform.resources.memory import SPIFlashResources
 from pathlib import Path
 from jinja2.filters import do_mark_safe as safe
 
@@ -10,7 +10,7 @@ __all__ = (
 	'OpenPIClePlatform',
 )
 
-class OpenPIClePlatform(Sky130HighSpeedPlatform):
+class OpenPIClePlatform(Sky130BHighSpeedPlatform):
 	#pdk = 'sky130B'
 
 	default_clk = 'clk'

@@ -1,60 +1,59 @@
 # SPDX-License-Identifier: BSD-3-Clause
-from arachne.core.sim import sim_case
-from amaranth.sim import Simulator
+from torii.test import ToriiTestCase
 from ...pic16.callStack import CallStack
 
-@sim_case(
-	domains = (('sync', 25e6),),
-	dut = CallStack()
-)
-def callStack(sim : Simulator, dut : CallStack):
-	def domainSync():
+class TestCallStack(ToriiTestCase):
+	dut: CallStack = CallStack
+	domains = (('sync', 25e6),)
+
+	@ToriiTestCase.simulation
+	@ToriiTestCase.sync_domain(domain = 'sync')
+	def testCallStack(self):
 		yield
 		yield
-		yield dut.valueIn.eq(0x713)
-		yield dut.push.eq(1)
-		assert (yield dut.count) == 0
+		yield self.dut.valueIn.eq(0x713)
+		yield self.dut.push.eq(1)
+		assert (yield self.dut.count) == 0
 		yield
-		yield dut.push.eq(0)
-		assert (yield dut.count) == 0
+		yield self.dut.push.eq(0)
+		assert (yield self.dut.count) == 0
 		yield
-		yield dut.valueIn.eq(0xA5F)
-		yield dut.push.eq(1)
-		assert (yield dut.count) == 1
+		yield self.dut.valueIn.eq(0xA5F)
+		yield self.dut.push.eq(1)
+		assert (yield self.dut.count) == 1
 		yield
-		yield dut.push.eq(0)
-		assert (yield dut.count) == 1
+		yield self.dut.push.eq(0)
+		assert (yield self.dut.count) == 1
 		yield
-		yield dut.pop.eq(1)
-		assert (yield dut.count) == 2
+		yield self.dut.pop.eq(1)
+		assert (yield self.dut.count) == 2
 		yield
-		yield dut.pop.eq(0)
-		assert (yield dut.count) == 2
-		assert (yield dut.valueOut) == 0xA5F
+		yield self.dut.pop.eq(0)
+		assert (yield self.dut.count) == 2
+		assert (yield self.dut.valueOut) == 0xA5F
 		yield
-		assert (yield dut.count) == 1
+		assert (yield self.dut.count) == 1
 		yield
-		yield dut.valueIn.eq(0x975)
-		yield dut.push.eq(1)
-		assert (yield dut.count) == 1
+		yield self.dut.valueIn.eq(0x975)
+		yield self.dut.push.eq(1)
+		assert (yield self.dut.count) == 1
 		yield
-		yield dut.push.eq(0)
-		assert (yield dut.count) == 1
+		yield self.dut.push.eq(0)
+		assert (yield self.dut.count) == 1
 		yield
-		yield dut.pop.eq(1)
-		assert (yield dut.count) == 2
+		yield self.dut.pop.eq(1)
+		assert (yield self.dut.count) == 2
 		yield
-		yield dut.pop.eq(0)
-		assert (yield dut.count) == 2
-		assert (yield dut.valueOut) == 0x975
+		yield self.dut.pop.eq(0)
+		assert (yield self.dut.count) == 2
+		assert (yield self.dut.valueOut) == 0x975
 		yield
-		yield dut.pop.eq(1)
-		assert (yield dut.count) == 1
+		yield self.dut.pop.eq(1)
+		assert (yield self.dut.count) == 1
 		yield
-		yield dut.pop.eq(0)
-		assert (yield dut.count) == 1
-		assert (yield dut.valueOut) == 0x713
+		yield self.dut.pop.eq(0)
+		assert (yield self.dut.count) == 1
+		assert (yield self.dut.valueOut) == 0x713
 		yield
-		assert (yield dut.count) == 0
+		assert (yield self.dut.count) == 0
 		yield
-	yield domainSync, 'sync'

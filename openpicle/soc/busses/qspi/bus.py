@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: BSD-3-Clause
-from amaranth import Elaboratable, Module, Signal, Repl
+from torii import Elaboratable, Module, Signal, Value
 from .type import *
 
 __all__ = (
@@ -78,7 +78,7 @@ class Bus(Elaboratable):
 			with m.State('QSPI-SHIFT-L'):
 				m.d.sync += [
 					bus.clk.o.eq(0),
-					io_oe.eq(Repl(write, 4)),
+					io_oe.eq(write.replicate(4)),
 					data.eq(data.shift_left(4)),
 					nibbleCounter.eq(nibbleCounter - 1),
 				]

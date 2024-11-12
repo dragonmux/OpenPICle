@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: BSD-3-Clause
-from amaranth import Elaboratable, Module, Signal
-from amaranth.utils import log2_int
-from amaranth_soc.memory import MemoryMap
+from torii import Elaboratable, Module, Signal
+from torii.util.units import log2_exact
+from torii.lib.soc.memory import MemoryMap
 from .types import *
 
 __all__ = (
@@ -24,7 +24,7 @@ class PICBus(Elaboratable):
 
 	def add_memory(self, *, address, size) -> Memory:
 		 # Validate size and create Memory instance..
-		memory = Memory(address_width = log2_int(size))
+		memory = Memory(address_width = log2_exact(size))
 		self.memoryMap.add_resource(memory, size = size, addr = address)
 		return memory
 
@@ -43,7 +43,7 @@ class PICBus(Elaboratable):
 			addressBegin, addressEnd, dataWidth = addressRange
 			assert dataWidth == 8
 			addressCount = addressEnd - addressBegin
-			addressSlice = log2_int(addressCount)
+			addressSlice = log2_exact(addressCount)
 			with m.If(processor.address[addressSlice:] == (addressBegin >> addressSlice)):
 				m.d.comb += [
 					processor.readData.eq(resource.readData),

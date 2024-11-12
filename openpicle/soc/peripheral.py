@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: BSD-3-Clause
-from amaranth import Elaboratable, tracer
-from amaranth_soc import csr
-from amaranth_soc.memory import MemoryMap
+from torii import Elaboratable, tracer
+from torii.lib.soc import csr
+from torii.lib.soc.memory import MemoryMap
 
 __all__ = ['Peripheral', 'CSRBank', 'PeripheralBridge']
 

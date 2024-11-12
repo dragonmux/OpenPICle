@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: BSD-3-Clause
-from amaranth import Record
+from torii import Record
 from ..soc.busses.pic.types import Processor as PeripheralBus
 
 __all__ = ('InstructionBus', 'PeripheralBus')

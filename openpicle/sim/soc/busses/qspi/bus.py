@@ -1,8 +1,8 @@
 # SPDX-License-Identifier: BSD-3-Clause
-from arachne.core.sim import sim_case
-from amaranth import Elaboratable, Module, Signal, ResetSignal, Record
-from amaranth.hdl.rec import DIR_FANIN, DIR_FANOUT
-from amaranth.sim import Simulator, Settle
+from torii.test import ToriiTestCase
+from torii import Elaboratable, Module, Signal, ResetSignal, Record
+from torii.hdl.rec import DIR_FANIN, DIR_FANOUT
+from torii.sim import Settle
 
 from .....soc.busses.qspi.bus import Bus
 from .....soc.busses.qspi.type import SPIOpcodes
@@ -46,16 +46,16 @@ class DUT(Elaboratable):
 		m.d.comb += ResetSignal().eq(self.reset)
 		return m
 
-@sim_case(
-	domains = (('sync', 25e6),),
-	dut = DUT(resource = bus)
-)
-def startup(sim : Simulator, dut : DUT):
-	bus = dut._bus
-	reset = dut.reset
-	copi = bus.dq.o[0]
+class TestQSPIBus(ToriiTestCase):
+	dut: DUT = DUT
+	dut_args = {
+		'resource': bus
+	}
+	domains = (('sync', 25e6),)
 
-	def performIO(*, dataOut):
+	def performIO(self, *, dataOut):
+		bus = self.dut._bus
+		copi = bus.dq.o[0]
 		yield
 		yield Settle()
 		assert (yield bus.cs.o) == 1
@@ -72,29 +72,33 @@ def startup(sim : Simulator, dut : DUT):
 		assert (yield bus.dq.oe) == 0b0001
 		yield
 		yield Settle()
-		assert (yield dut.ready) == 1
+		assert (yield self.dut.ready) == 1
 		assert (yield bus.cs.o) == 0
 		assert (yield bus.dq.oe) == 0b0000
 		yield
 		yield Settle()
 
-	def domainSync():
+	@ToriiTestCase.simulation
+	@ToriiTestCase.sync_domain(domain = 'sync')
+	def testStartup(self):
+		bus = self.dut._bus
+		reset = self.dut.reset
+
 		yield reset.eq(1)
 		yield Settle()
 		yield
-		yield dut.cs.eq(0)
+		yield self.dut.cs.eq(0)
 		yield
 		yield Settle()
-		assert (yield dut.ready) == 0
+		assert (yield self.dut.ready) == 0
 		assert (yield bus.cs.o) == 0
 		assert (yield bus.dq.oe) == 0b0000
 		yield reset.eq(0)
-		yield from performIO(dataOut = SPIOpcodes.enableQSPI)
-		assert (yield dut.ready) == 1
+		yield from self.performIO(dataOut = SPIOpcodes.enableQSPI)
+		assert (yield self.dut.ready) == 1
 		assert (yield bus.cs.o) == 0
 		assert (yield bus.dq.oe) == 0b0000
 		yield
 		yield Settle()
 		assert (yield bus.cs.o) == 0
 		assert (yield bus.dq.oe) == 0b0000
-	yield domainSync, 'sync'

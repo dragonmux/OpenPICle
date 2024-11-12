@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: BSD-3-Clause
-from amaranth import Elaboratable, Module, Signal
+from torii import Elaboratable, Module, Signal
 from .types import ArithOpcode, LogicOpcode
 
 __all__ = ('ArithUnit', 'LogicUnit')

@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: BSD-3-Clause
-from arachne.core.sim import sim_case
-from amaranth import Elaboratable, Signal, Module
-from amaranth.sim import Simulator, Settle
+from torii.test import ToriiTestCase
+from torii import Elaboratable, Signal, Module
+from torii.sim import Settle
 from ...pic16.types import ArithOpcode, LogicOpcode
 from ...pic16.alu import ArithUnit, LogicUnit
 
@@ -39,94 +39,94 @@ class DUT(Elaboratable):
 		]
 		return m
 
-@sim_case(
-	domains = (('sync', 25e6),),
-	dut = DUT()
-)
-def alu(sim : Simulator, dut : DUT):
-	def performArith(opcode, lhs, rhs):
-		yield dut.arithOpcode.eq(opcode)
-		yield dut.arithLHS.eq(lhs)
-		yield dut.arithRHS.eq(rhs)
+class TestALU(ToriiTestCase):
+	dut: DUT = DUT
+	domains = (('sync', 25e6),)
 
-	def performLogic(opcode, lhs, rhs):
-		yield dut.logicOpcode.eq(opcode)
-		yield dut.logicLHS.eq(lhs)
-		yield dut.logicRHS.eq(rhs)
+	def performArith(self, opcode, lhs, rhs):
+		yield self.dut.arithOpcode.eq(opcode)
+		yield self.dut.arithLHS.eq(lhs)
+		yield self.dut.arithRHS.eq(rhs)
 
-	def checkResult(arithResult, logicResult, carry):
+	def performLogic(self, opcode, lhs, rhs):
+		yield self.dut.logicOpcode.eq(opcode)
+		yield self.dut.logicLHS.eq(lhs)
+		yield self.dut.logicRHS.eq(rhs)
+
+	def checkResult(self, arithResult, logicResult, carry):
 		yield Settle()
-		assert (yield dut.arithResult) == arithResult
-		assert (yield dut.logicResult) == logicResult
-		assert (yield dut.carry) == carry
+		assert (yield self.dut.arithResult) == arithResult
+		assert (yield self.dut.logicResult) == logicResult
+		assert (yield self.dut.carry) == carry
 
-	def domainSync():
-		yield from performArith(ArithOpcode.ADD, 0, 0)
-		yield from performLogic(LogicOpcode.NONE, 0, 0)
+	@ToriiTestCase.simulation
+	@ToriiTestCase.sync_domain(domain = 'sync')
+	def testALU(self):
+		yield from self.performArith(ArithOpcode.ADD, 0, 0)
+		yield from self.performLogic(LogicOpcode.NONE, 0, 0)
 		yield
-		yield from checkResult(0, 0, 0)
-		yield from performArith(ArithOpcode.ADD, 5, 10)
+		yield from self.checkResult(0, 0, 0)
+		yield from self.performArith(ArithOpcode.ADD, 5, 10)
 		yield
-		yield from checkResult(15, 0, 0)
-		yield from performArith(ArithOpcode.ADD, 0, 10)
+		yield from self.checkResult(15, 0, 0)
+		yield from self.performArith(ArithOpcode.ADD, 0, 10)
 		yield
-		yield from checkResult(10, 0, 0)
-		yield from performArith(ArithOpcode.SUB, 35, 10)
+		yield from self.checkResult(10, 0, 0)
+		yield from self.performArith(ArithOpcode.SUB, 35, 10)
 		yield
-		yield from checkResult(25, 0, 0)
-		yield from performArith(ArithOpcode.ADD, 255, 112)
+		yield from self.checkResult(25, 0, 0)
+		yield from self.performArith(ArithOpcode.ADD, 255, 112)
 		yield
-		yield from checkResult(111, 0, 1)
-		yield from performArith(ArithOpcode.INC, 35, 0)
+		yield from self.checkResult(111, 0, 1)
+		yield from self.performArith(ArithOpcode.INC, 35, 0)
 		yield
-		yield from checkResult(1, 0, 0)
-		yield from performArith(ArithOpcode.ADD, 0, 112)
+		yield from self.checkResult(1, 0, 0)
+		yield from self.performArith(ArithOpcode.ADD, 0, 112)
 		yield
-		yield from checkResult(112, 0, 0)
-		yield from performArith(ArithOpcode.DEC, 196, 254)
+		yield from self.checkResult(112, 0, 0)
+		yield from self.performArith(ArithOpcode.DEC, 196, 254)
 		yield
-		yield from checkResult(253, 0, 0)
-		yield from performArith(ArithOpcode.ADD, 0, 0)
+		yield from self.checkResult(253, 0, 0)
+		yield from self.performArith(ArithOpcode.ADD, 0, 0)
 		yield
-		yield from checkResult(0, 0, 0)
-		yield from performLogic(LogicOpcode.AND, 154, 196)
+		yield from self.checkResult(0, 0, 0)
+		yield from self.performLogic(LogicOpcode.AND, 154, 196)
 		yield
-		yield from checkResult(0, 128, 0)
-		yield from performLogic(LogicOpcode.NONE, 100, 5)
+		yield from self.checkResult(0, 128, 0)
+		yield from self.performLogic(LogicOpcode.NONE, 100, 5)
 		yield
-		yield from checkResult(0, 0, 0)
-		yield from performLogic(LogicOpcode.OR, 0xF0, 0x0F)
+		yield from self.checkResult(0, 0, 0)
+		yield from self.performLogic(LogicOpcode.OR, 0xF0, 0x0F)
 		yield
-		yield from checkResult(0, 255, 0)
-		yield from performLogic(LogicOpcode.NONE, 100, 5)
+		yield from self.checkResult(0, 255, 0)
+		yield from self.performLogic(LogicOpcode.NONE, 100, 5)
 		yield
-		yield from checkResult(0, 0, 0)
-		yield from performLogic(LogicOpcode.XOR, 0xA5, 0x57)
+		yield from self.checkResult(0, 0, 0)
+		yield from self.performLogic(LogicOpcode.XOR, 0xA5, 0x57)
 		yield
-		yield from checkResult(0, 0xF2, 0)
-		yield from performLogic(LogicOpcode.NONE, 0, 5)
+		yield from self.checkResult(0, 0xF2, 0)
+		yield from self.performLogic(LogicOpcode.NONE, 0, 5)
 		yield
-		yield from checkResult(0, 0, 0)
-		yield from performArith(ArithOpcode.ADD, 254, 5)
+		yield from self.checkResult(0, 0, 0)
+		yield from self.performArith(ArithOpcode.ADD, 254, 5)
 		yield
-		yield from checkResult(3, 0, 1)
-		yield from performArith(ArithOpcode.SUB, 1, 5)
+		yield from self.checkResult(3, 0, 1)
+		yield from self.performArith(ArithOpcode.SUB, 1, 5)
 		yield
-		yield from checkResult(252, 0, 1)
-		yield from performArith(ArithOpcode.ADD, 0, 0)
-		yield from performLogic(LogicOpcode.OR, 0xA0, 0x05)
+		yield from self.checkResult(252, 0, 1)
+		yield from self.performArith(ArithOpcode.ADD, 0, 0)
+		yield from self.performLogic(LogicOpcode.OR, 0xA0, 0x05)
 		yield
-		yield from checkResult(0, 0xA5, 0)
-		yield from performLogic(LogicOpcode.NONE, 0, 0)
-		yield from performArith(ArithOpcode.INC, 66, 255)
+		yield from self.checkResult(0, 0xA5, 0)
+		yield from self.performLogic(LogicOpcode.NONE, 0, 0)
+		yield from self.performArith(ArithOpcode.INC, 66, 255)
 		yield
-		yield from checkResult(0, 0, 1)
-		yield from performArith(ArithOpcode.DEC, 66, 0)
+		yield from self.checkResult(0, 0, 1)
+		yield from self.performArith(ArithOpcode.DEC, 66, 0)
 		yield
-		yield from checkResult(255, 0, 1)
-		yield from performArith(ArithOpcode.ADD, 66, 54)
+		yield from self.checkResult(255, 0, 1)
+		yield from self.performArith(ArithOpcode.ADD, 66, 54)
 		yield
-		yield from checkResult(120, 0, 0)
+		yield from self.checkResult(120, 0, 0)
 		yield
-		yield from checkResult(120, 0, 0)
-	yield domainSync, 'sync'
+		yield from self.checkResult(120, 0, 0)

@@ -1,20 +1,21 @@
 # SPDX-License-Identifier: BSD-3-Clause
-from arachne.core.sim import sim_case
-from amaranth.sim import Simulator, Settle
+from torii.test import ToriiTestCase
+from torii.sim import Settle
 from ...pic16 import PIC16
 
-@sim_case(
-	domains = (('sync', 25e6),),
-	dut = PIC16()
-)
-def processor(sim : Simulator, dut : PIC16):
-	iBus = dut.iBus
-	pBus = dut.pBus
+class TestProcessor(ToriiTestCase):
+	dut: PIC16 = PIC16
+	domains = (('sync', 25e6),)
 
-	def domainSync():
+	@ToriiTestCase.simulation
+	@ToriiTestCase.sync_domain(domain = 'sync')
+	def testProcessor(self):
+		iBus = self.dut.iBus
+		pBus = self.dut.pBus
+
 		assert (yield iBus.read) == 1
 		assert (yield iBus.address) == 0
-		assert (yield dut.pc) == 0
+		assert (yield self.dut.pc) == 0
 		# Perform NOP
 		yield iBus.data.eq(0b00_0000_0000_0000)
 		yield Settle()
@@ -45,7 +46,7 @@ def processor(sim : Simulator, dut : PIC16):
 		yield Settle()
 		yield
 		yield Settle()
-		assert (yield dut.wreg) == 0x1F
+		assert (yield self.dut.wreg) == 0x1F
 		assert (yield iBus.read) == 0
 		yield
 		yield Settle()
@@ -59,7 +60,7 @@ def processor(sim : Simulator, dut : PIC16):
 		yield Settle()
 		yield
 		yield Settle()
-		assert (yield dut.wreg) == 0x24
+		assert (yield self.dut.wreg) == 0x24
 		assert (yield iBus.read) == 0
 		yield
 		yield Settle()
@@ -80,7 +81,7 @@ def processor(sim : Simulator, dut : PIC16):
 		yield Settle()
 		yield
 		yield Settle()
-		assert (yield dut.wreg) == 0x24
+		assert (yield self.dut.wreg) == 0x24
 		assert (yield iBus.read) == 0
 		assert (yield pBus.write) == 1
 		assert (yield pBus.writeData) == 0x44
@@ -123,7 +124,7 @@ def processor(sim : Simulator, dut : PIC16):
 		yield Settle()
 		yield
 		yield Settle()
-		assert (yield dut.wreg) == 0
+		assert (yield self.dut.wreg) == 0
 		assert (yield pBus.write) == 0
 		yield
 		yield Settle()
@@ -150,7 +151,7 @@ def processor(sim : Simulator, dut : PIC16):
 		yield iBus.data.eq(0b10_0000_0001_0101)
 		yield
 		assert (yield iBus.address) == 9
-		assert (yield dut.pc) == 9
+		assert (yield self.dut.pc) == 9
 		yield
 		yield
 		yield
@@ -159,7 +160,7 @@ def processor(sim : Simulator, dut : PIC16):
 		yield iBus.data.eq(0b00_0000_0000_1000)
 		yield
 		assert (yield iBus.address) == 0x015
-		assert (yield dut.pc) == 0x015
+		assert (yield self.dut.pc) == 0x015
 		yield
 		yield
 		yield
@@ -168,8 +169,7 @@ def processor(sim : Simulator, dut : PIC16):
 		yield iBus.data.eq(0b00_0000_0000_0000)
 		yield
 		assert (yield iBus.address) == 10
-		assert (yield dut.pc) == 10
+		assert (yield self.dut.pc) == 10
 		yield
 		yield
 		yield
-	yield domainSync, 'sync'

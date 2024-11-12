@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: BSD-3-Clause
-from amaranth import Record
-from amaranth.hdl.rec import Direction
+from torii import Record
+from torii.hdl.rec import Direction
 
 __all__ = ('Processor', 'Register', 'Memory')
 

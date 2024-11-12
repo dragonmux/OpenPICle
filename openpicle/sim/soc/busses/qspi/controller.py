@@ -1,8 +1,8 @@
 # SPDX-License-Identifier: BSD-3-Clause
-from arachne.core.sim import sim_case
-from amaranth import Record
-from amaranth.hdl.rec import DIR_FANIN, DIR_FANOUT
-from amaranth.sim import Simulator, Settle
+from torii.test import ToriiTestCase
+from torii import Record
+from torii.hdl.rec import DIR_FANIN, DIR_FANOUT
+from torii.sim import Settle
 
 from .....soc.busses.qspi.type import QSPIOpcodes
 from .....soc.busses.qspi.controller import Controller
@@ -73,21 +73,25 @@ def qspiWrite(data):
 	yield Settle()
 	assert (yield bus.clk.o) == 1
 
-@sim_case(
-	domains = (('sync', 25e6),),
-	dut = Controller(resourceName = ('qspi-flash', 0)),
+class TestQSPIController(ToriiTestCase):
+	dut: Controller = Controller
+	dut_args = {
+		'resourceName': ('qspi-flash', 0)
+	}
+	domains = (('sync', 25e6),)
 	platform = Platform()
-)
-def readByte(sim : Simulator, dut : Controller):
-	def domainSync():
-		while (yield dut.ready) == 0:
+
+	@ToriiTestCase.simulation
+	@ToriiTestCase.sync_domain(domain = 'sync')
+	def testReadByte(self):
+		while (yield self.dut.ready) == 0:
 			yield
-		yield dut.address.eq(0x012345)
-		yield dut.read.eq(1)
+		yield self.dut.address.eq(0x012345)
+		yield self.dut.read.eq(1)
 		yield
 		yield Settle()
 		assert (yield bus.cs.o) == 1
-		yield dut.read.eq(0)
+		yield self.dut.read.eq(0)
 		yield from qspiRead(QSPIOpcodes.fastRead)
 		yield from qspiRead(0x01)
 		yield from qspiRead(0x23)
@@ -96,13 +100,12 @@ def readByte(sim : Simulator, dut : Controller):
 		yield from qspiRead(0x00)
 		yield from qspiWrite(0xE9)
 		yield from qspiWrite(0x5A)
-		assert (yield dut.complete) == 1
+		assert (yield self.dut.complete) == 1
 		yield
 		yield Settle()
 		assert (yield bus.cs.o) == 0
 		yield
-		assert (yield dut.data) == 0x5AE9
+		assert (yield self.dut.data) == 0x5AE9
 		yield
 		yield Settle()
 		yield
-	yield domainSync, 'sync'
