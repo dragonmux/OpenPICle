@@ -5,27 +5,28 @@ from torii.util.units import log2_exact
 from torii.lib.soc.memory import MemoryMap
 from torii.lib.soc.csr.bus import Element as Register
 from .types import Processor, Memory
-from typing import Optional
+from ....pic16 import PIC16
+from typing import Optional, TYPE_CHECKING
 
 __all__ = (
 	'PICBus',
 )
 
 class PICBus(Elaboratable):
-	def __init__(self):
-		self.processor = None
+	def __init__(self) -> None:
+		self.processor : Optional[PIC16] = None
 		self.memoryMap = MemoryMap(addr_width = 7, data_width = 8)
 
-	def add_processor(self, processor):
+	def add_processor(self, processor : PIC16):
 		assert self.processor is None, "Cannot add more than one processor to the bus"
 		self.processor = processor
 
-	def add_register(self, *, address : int, access : Register.Access, name : Optional[str] = None) -> Register:
+	def add_register(self, *, address : int, access : Register.Access, name : str) -> Register:
 		register = Register(width = self.memoryMap.data_width, access = access, name = name)
 		self.memoryMap.add_resource(register, size = 1, addr = address, name = name)
 		return register
 
-	def add_memory(self, *, address, size) -> Memory:
+	def add_memory(self, *, address : int, size : int) -> Memory:
 		 # Validate size and create Memory instance..
 		memory = Memory(address_width = log2_exact(size))
 		self.memoryMap.add_resource(memory, size = size, addr = address, name = 'memory')
@@ -46,7 +47,9 @@ class PICBus(Elaboratable):
 			addressBegin = busResource.start
 			addressEnd = busResource.end
 			dataWidth = busResource.width
-			resource : Register = busResource.resource
+			resource = busResource.resource
+			if TYPE_CHECKING:
+				assert isinstance(resource, (Register, Memory))
 			assert dataWidth == 8
 			addressCount = addressEnd - addressBegin
 			addressSlice = log2_exact(addressCount)

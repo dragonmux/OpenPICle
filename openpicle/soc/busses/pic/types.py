@@ -3,7 +3,7 @@ from torii import Record
 from torii.hdl.rec import Direction
 from torii.lib.soc.csr.bus import Element
 
-__all__ = ('Processor', 'Register', 'Memory')
+__all__ = ('Processor', 'Memory')
 
 class Processor(Record):
 	def __init__(self, *, name = None):
