@@ -13,6 +13,7 @@ from torii import (
 )
 from torii.build import Resource, Pins, Attrs
 from torii.util import tracer
+from torii.lib.soc.csr.bus import Element as Register
 from openpicle.soc.busses.pic import PICBus
 from openpicle.pic16 import PIC16
 from torii_boards.lattice.icebreaker_bitsy import ICEBreakerBitsyPlatform
@@ -30,12 +31,12 @@ class RAM(Elaboratable):
 
 		m.d.comb += [
 			writePort.addr.eq(self._bus.address),
-			writePort.data.eq(self._bus.writeData),
-			writePort.en.eq(self._bus.write),
+			writePort.data.eq(self._bus.w_data),
+			writePort.en.eq(self._bus.w_stb),
 
 			readPort.addr.eq(self._bus.address),
-			self._bus.readData.eq(readPort.data),
-			readPort.en.eq(self._bus.read)
+			self._bus.r_data.eq(readPort.data),
+			readPort.en.eq(self._bus.r_stb)
 		]
 		return m
 
@@ -66,15 +67,16 @@ class ROM(Elaboratable):
 
 class GPIO(Elaboratable):
 	def __init__(self, *, baseAddress, bus : PICBus):
+		Access = Register.Access
 		namespace = tracer.get_var_name(depth = 2)
 		self.inputs = Signal(8)
 		self.outputs = Signal(8)
 		self.outputEnables = Signal(8)
 
 		self._registers = (
-			bus.add_register(address = baseAddress, name = f'{namespace}.in'),
-			bus.add_register(address = baseAddress + 1, name = f'{namespace}.out'),
-			bus.add_register(address = baseAddress + 2, name = f'{namespace}.oe'),
+			bus.add_register(address = baseAddress + 0, access = Access.R, name = f'{namespace}.in'),
+			bus.add_register(address = baseAddress + 1, access = Access.RW, name = f'{namespace}.out'),
+			bus.add_register(address = baseAddress + 2, access = Access.RW, name = f'{namespace}.oe'),
 		)
 		self._baseAddress = baseAddress
 
@@ -88,18 +90,18 @@ class GPIO(Elaboratable):
 		outputs = self.outputs
 		directions = self.outputEnables
 
-		with m.If(inputReg.read):
-			m.d.comb += inputReg.readData.eq(inputs)
+		with m.If(inputReg.r_stb):
+			m.d.comb += inputReg.r_data.eq(inputs)
 
-		with m.If(outputReg.read):
-			m.d.comb += outputReg.readData.eq(outputs)
-		with m.If(outputReg.write):
-			m.d.sync += outputs.eq(outputReg.writeData)
+		with m.If(outputReg.r_stb):
+			m.d.comb += outputReg.r_data.eq(outputs)
+		with m.If(outputReg.w_stb):
+			m.d.sync += outputs.eq(outputReg.w_data)
 
-		with m.If(directionReg.read):
-			m.d.comb += directionReg.readData.eq(directions)
-		with m.If(directionReg.write):
-			m.d.sync += directions.eq(directionReg.writeData)
+		with m.If(directionReg.r_stb):
+			m.d.comb += directionReg.r_data.eq(directions)
+		with m.If(directionReg.w_stb):
+			m.d.sync += directions.eq(directionReg.w_data)
 		return m
 
 class Rebooter(Elaboratable):

@@ -3,7 +3,9 @@ from torii import Elaboratable, Module, Signal
 from torii.build import Platform
 from torii.util.units import log2_exact
 from torii.lib.soc.memory import MemoryMap
-from .types import *
+from torii.lib.soc.csr.bus import Element as Register
+from .types import Processor, Memory
+from typing import Optional
 
 __all__ = (
 	'PICBus',
@@ -18,8 +20,8 @@ class PICBus(Elaboratable):
 		assert self.processor is None, "Cannot add more than one processor to the bus"
 		self.processor = processor
 
-	def add_register(self, *, address, name = None) -> Register:
-		register = Register(name = name)
+	def add_register(self, *, address : int, access : Register.Access, name : Optional[str] = None) -> Register:
+		register = Register(width = self.memoryMap.data_width, access = access, name = name)
 		self.memoryMap.add_resource(register, size = 1, addr = address, name = name)
 		return register
 
@@ -49,17 +51,17 @@ class PICBus(Elaboratable):
 			addressCount = addressEnd - addressBegin
 			addressSlice = log2_exact(addressCount)
 			with m.If(processor.address[addressSlice:] == (addressBegin >> addressSlice)):
-				m.d.comb += [
-					processor.readData.eq(resource.readData),
-					resource.write.eq(processor.write),
-					resource.writeData.eq(processor.writeData),
-				]
-				if isinstance(resource, Memory):
+				if resource.access.readable():
 					m.d.comb += [
-						resource.address.eq(processor.address[:addressSlice]),
-						resource.read.eq(processor.read)
+						resource.r_stb.eq(read),
+						processor.readData.eq(resource.r_data),
 					]
-				else:
-					m.d.comb += resource.read.eq(read)
+				if resource.access.writable():
+					m.d.comb += [
+						resource.w_stb.eq(processor.write),
+						resource.w_data.eq(processor.writeData),
+					]
+				if isinstance(resource, Memory):
+					m.d.comb += resource.address.eq(processor.address[:addressSlice])
 
 		return m
